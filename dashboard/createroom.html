@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Create Room</title>
+	<style>
+		body {
+			font-family: sans-serif;
+			padding: 2rem;
+		}
+
+		.user-row {
+			margin-bottom: 0.5rem;
+		}
+
+		button {
+			margin-top: 1rem;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Create Room</h1>
+
+	<div id="users-container">
+		<div class="user-row">
+			<input placeholder="User UUID" class="user-uuid">
+			<input placeholder="User Name (optional)" class="user-name">
+			<button type="button" onclick="removeUser(this)">❌</button>
+		</div>
+	</div>
+
+	<button type="button" onclick="addUser()">Add Another User</button>
+	<br>
+	<button type="button" onclick="createRoom()">Create Room</button>
+
+	<pre id="result"></pre>
+
+	<script>
+		function addUser() {
+			const container = document.getElementById('users-container');
+			const div = document.createElement('div');
+			div.className = 'user-row';
+			div.innerHTML = `
+				<input placeholder="User UUID" class="user-uuid">
+				<input placeholder="User Name (optional)" class="user-name">
+				<button type="button" onclick="removeUser(this)">❌</button>
+			`;
+			container.appendChild(div);
+		}
+
+		function removeUser(btn) {
+			btn.parentElement.remove();
+		}
+
+		async function createRoom() {
+			const users = Array.from(document.querySelectorAll('.user-row')).map(row => ({
+				uuid: row.querySelector('.user-uuid').value.trim(),
+				name: row.querySelector('.user-name').value.trim()
+			})).filter(u => u.uuid);
+
+			if (!users.length) {
+				alert('Add at least one user with UUID');
+				return;
+			}
+
+			try {
+				const res = await fetch('/create-room', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ users })
+				});
+				const data = await res.json();
+				document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+			} catch (err) {
+				console.error(err);
+				alert('Error creating room');
+			}
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+.git
+.gitignore
+README.md
+LICENSE
+deployments/
+*.log
+.DS_Store
+node_modules/
+.env
+.deno_dir/
