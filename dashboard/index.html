@@ -1,177 +1,34 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<title>Simple Chat</title>
-	<style>
-		body {
-			font-family: sans-serif;
-			background: #f9fafb;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			padding: 2rem;
-		}
-
-		h1 {
-			font-size: 1.5rem;
-			margin-bottom: 1rem;
-		}
-
-		#events {
-			list-style: none;
-			padding: 0;
-			width: 100%;
-			max-width: 500px;
-			border: 1px solid #ddd;
-			background: #fff;
-			border-radius: 8px;
-			overflow-y: auto;
-			max-height: 300px;
-			margin-bottom: 1rem;
-		}
-
-		#events li {
-			padding: 0.5rem 1rem;
-			border-bottom: 1px solid #eee;
-		}
-
-		#events li:last-child {
-			border-bottom: none;
-		}
-
-		form {
-			display: flex;
-			gap: 0.5rem;
-			width: 100%;
-			max-width: 500px;
-			margin-bottom: 1rem;
-		}
-
-		input,
-		button {
-			padding: 0.5rem;
-			border-radius: 6px;
-			border: 1px solid #ccc;
-			font-size: 1rem;
-		}
-
-		input {
-			flex: 1;
-		}
-
-		button {
-			background: #2563eb;
-			color: white;
-			border: none;
-			cursor: pointer;
-			transition: background 0.2s;
-		}
-
-		button:hover {
-			background: #1e40af;
-		}
-
-		.system {
-			color: #6b7280;
-			font-style: italic;
-		}
-	</style>
+  <meta charset="UTF-8">
+  <title>UUID Chat</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-	<h1>UUID Chat</h1>
+  <header>UUID Chat</header>
 
-	<form id="resolve-form">
-		<input type="text" id="user-uuid" placeholder="Enter your UUID" required>
-		<button type="submit">Resolve</button>
-	</form>
+  <main>
+    <form id="resolve-form" class="centered-form">
+      <input type="text" id="user-uuid" placeholder="Enter your UUID" required>
+      <button type="submit">Join</button>
+    </form>
 
-	<div id="room-info" style="margin-bottom:1rem;"></div>
+    <div id="chat-ui" style="display:none;">
+      <div id="room-info"></div>
 
-	<ul id="events"></ul>
+      <ul id="events"></ul>
 
-	<form id="chat-form" style="display:none;">
-		<input type="text" id="message" placeholder="Type a message..." required>
-		<button type="submit">Send</button>
-	</form>
+      <form id="chat-form">
+        <input type="text" id="message" placeholder="Type a message..." required>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </main>
 
-	<script>
-		const resolveForm = document.getElementById("resolve-form");
-		const chatForm = document.getElementById("chat-form");
-		const eventsList = document.getElementById("events");
-		const roomInfo = document.getElementById("room-info");
-
-		let currentUserUUID = null;
-		let currentUserName = null;
-		let currentRoomUUID = null;
-		let evtSource = null;
-
-		resolveForm.addEventListener("submit", async (e) => {
-			e.preventDefault();
-			const uuid = document.getElementById("user-uuid").value.trim();
-			if (!uuid) return;
-
-			const res = await fetch("/resolve", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ uuid })
-			});
-
-			const data = await res.json();
-			if (data.error) { alert(data.error); return; }
-
-			currentUserUUID = data.user.uuid;
-			currentUserName = data.user.name;
-			currentRoomUUID = data.room_uuid;
-
-			roomInfo.textContent = currentRoomUUID
-				? `You are in room: ${currentRoomUUID}`
-				: "No room assigned yet";
-
-			chatForm.style.display = currentRoomUUID ? "flex" : "none";
-
-			if (evtSource) evtSource.close();
-			evtSource = new EventSource("/sse");
-
-			evtSource.addEventListener("system", (e) => {
-				const li = document.createElement("li");
-				li.textContent = e.data;
-				li.classList.add("system");
-				eventsList.appendChild(li);
-				eventsList.scrollTop = eventsList.scrollHeight;
-			});
-
-			evtSource.addEventListener("message", (e) => {
-				const msg = JSON.parse(e.data);
-				const li = document.createElement("li");
-				li.textContent = `${msg.name || msg.user_id}: ${msg.message}`;
-				eventsList.appendChild(li);
-				eventsList.scrollTop = eventsList.scrollHeight;
-			});
-
-			evtSource.onerror = (e) => console.error("SSE error:", e);
-		});
-
-		chatForm.addEventListener("submit", async (e) => {
-			e.preventDefault();
-			const msgInput = document.getElementById("message");
-			const content = msgInput.value.trim();
-			if (!content) return;
-
-			await fetch("/chat/send", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					user_id: currentUserUUID,
-					name: currentUserName,
-					message: content
-				})
-			});
-
-			msgInput.value = "";
-		});
-	</script>
+  <script src="script.js"></script>
 </body>
 
 </html>

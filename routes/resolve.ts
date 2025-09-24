@@ -8,9 +8,9 @@ export function handleResolve(app: Hono, db: Client) {
 		// Ensure user exists
 		const userRes = await db.queryObject<{ uuid: string, name: string }>(
 			`INSERT INTO users (uuid, name)
-         VALUES ($1, 'Anonymous')
-         ON CONFLICT (uuid) DO NOTHING
-         RETURNING uuid, name`,
+        	VALUES ($1, 'Anonymous')
+        	ON CONFLICT (uuid) DO NOTHING
+        	RETURNING uuid, name`,
 			[uuid]
 		);
 
@@ -29,5 +29,4 @@ export function handleResolve(app: Hono, db: Client) {
 
 		return c.json({ user, room_uuid: room?.room_uuid || null });
 	});
-
 }

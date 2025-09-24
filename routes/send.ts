@@ -10,7 +10,12 @@ export function handleSend(app: Hono) {
 				return c.json({ error: "Invalid payload" }, 400);
 			}
 
-			const message = JSON.stringify(payload);
+			const injected = {
+				...payload,
+				timestamp: new Date().toISOString(),
+			};
+
+			const message = JSON.stringify(injected);
 
 			for (const [, send] of clients) {
 				send(message);
