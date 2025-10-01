@@ -10,7 +10,7 @@ app.use("*", cors());
 export const clients = new Map<string, (data: string) => void>();
 app.get("/*", serveStatic({ root: "./dashboard" }));
 handleSSEConnection(app);
-handleSend(app);
+handleSend(app, client);
 handleCreateRoom(app, client);
 handleResolve(app, client);
 

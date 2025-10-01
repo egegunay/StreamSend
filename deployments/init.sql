@@ -19,7 +19,7 @@ CREATE TABLE user_rooms (
 
 -- Messages
 CREATE TABLE messages (
-	id SERIAL PRIMARY KEY,
+	id UUID PRIMARY KEY,
 	room_uuid UUID REFERENCES rooms(uuid) ON DELETE CASCADE,
 	sender_uuid UUID REFERENCES users(uuid) ON DELETE CASCADE,
 	content TEXT NOT NULL,

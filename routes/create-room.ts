@@ -15,16 +15,16 @@ export function handleCreateRoom(app: Hono, db: Client) {
 			// Insert user if not exists
 			await db.queryArray(
 				`INSERT INTO users (uuid, name)
-         VALUES ($1, $2)
-         ON CONFLICT (uuid) DO NOTHING`,
+		 		VALUES ($1, $2)
+		 		ON CONFLICT (uuid) DO NOTHING`,
 				[user.uuid, userName]
 			);
 
 			// Attach user to the room
 			await db.queryArray(
 				`INSERT INTO user_rooms (user_uuid, room_uuid)
-         VALUES ($1, $2)
-         ON CONFLICT (user_uuid, room_uuid) DO NOTHING`,
+		 		VALUES ($1, $2)
+		 		ON CONFLICT (user_uuid, room_uuid) DO NOTHING`,
 				[user.uuid, room_uuid]
 			);
 		}

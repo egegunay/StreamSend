@@ -1,4 +1,5 @@
 import { Hono, Client, Context } from "../deps.ts";
+import { getChannelFromUUID } from "../helpers/get-channel.ts";
 
 export function handleResolve(app: Hono, db: Client) {
 	app.post("/resolve", async (c: Context) => {
@@ -8,9 +9,9 @@ export function handleResolve(app: Hono, db: Client) {
 		// Ensure user exists
 		const userRes = await db.queryObject<{ uuid: string, name: string }>(
 			`INSERT INTO users (uuid, name)
-        	VALUES ($1, 'Anonymous')
-        	ON CONFLICT (uuid) DO NOTHING
-        	RETURNING uuid, name`,
+			VALUES ($1, 'Anonymous')
+			ON CONFLICT (uuid) DO NOTHING
+			RETURNING uuid, name`,
 			[uuid]
 		);
 
@@ -20,12 +21,7 @@ export function handleResolve(app: Hono, db: Client) {
 		)).rows[0];
 
 		// Find their chat room
-		const roomRes = await db.queryObject<{ room_uuid: string }>(
-			`SELECT room_uuid FROM user_rooms WHERE user_uuid = $1`,
-			[uuid]
-		);
-
-		const room = roomRes.rows[0];
+		const room = await getChannelFromUUID(uuid, db)
 
 		return c.json({ user, room_uuid: room?.room_uuid || null });
 	});
